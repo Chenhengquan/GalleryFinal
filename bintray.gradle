@@ -12,31 +12,29 @@ def projectGitUrl = project_gitUrl
 def javadocName = javadoc_name
 
 // load properties
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-def developerId = properties.getProperty("developer.id")
-def developerName = properties.getProperty("developer.name")
-def developerEmail = properties.getProperty("developer.email")
-def bintrayUser = properties.getProperty("bintray.user")
-def bintrayApikey = properties.getProperty("bintray.apikey")
+//Properties properties = new Properties()
+//properties.load(project.rootProject.file('local.properties').newDataInputStream())
+//def bintrayUser = properties.getProperty("bintray.user")
+//def bintrayApikey = properties.getProperty("bintray.apikey")
 
 
 
 //在这里一定要定义group version
-group = projectGroupId
-version = projectVersionName
+group = 'cn.finalteam'
+version = '1.4.8.6'
 
 // This generates POM.xml with proper parameters
 install {
     repositories.mavenInstaller {
         pom {
             project {
-                name projectName
-                groupId projectGroupId
-                artifactId projectArtifactId
-                version projectVersionName
-                packaging projectPackaging
-                url projectSiteUrl
+                name 'GalleryFinal'
+                groupId 'cn.finalteam'
+                artifactId 'GalleryFinal'
+                packaging 'aar'
+                name 'GalleryFinal'
+                description 'A tool for Android'
+                url 'https://github.com/Chenhengquan/GalleryFinal'
                 licenses {
                     license {
                         name 'The Apache Software License, Version 2.0'
@@ -45,20 +43,21 @@ install {
                 }
                 developers {
                     developer {
-                        id developerId
-                        name developerName
-                        email developerEmail
+                        id 'RxChan'
+                        name 'RxChan'
+                        email 'RxChan@icloud.com'
                     }
                 }
                 scm {
-                    connection projectGitUrl
-                    developerConnection projectGitUrl
-                    url projectSiteUrl
+                    connection 'https://github.com/Chenhengquan/GalleryFinal'
+                    developerConnection 'https://github.com/Chenhengquan/GalleryFinal'
+                    url 'https://github.com/Chenhengquan/GalleryFinal'
                 }
             }
         }
     }
 }
+
 
 // This generates sources.jar
 task sourcesJar(type: Jar) {
@@ -67,44 +66,82 @@ task sourcesJar(type: Jar) {
 }
 
 //This generates javadocJar.jar
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += configurations.compile
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
+//task javadoc(type: Javadoc) {
+//    source = android.sourceSets.main.java.srcDirs
+//    classpath += configurations.compile
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//}
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//    classifier = 'javadoc'
+//    from javadoc.destinationDir
+//}
 
-javadoc {
-    options{
-        encoding "UTF-8"
-        charSet 'UTF-8'
-        author true
-        version true
-        links "http://docs.oracle.com/javase/7/docs/api"
-        title javadocName
-    }
-}
+//javadoc {
+//    options{
+//        encoding "UTF-8"
+//        charSet 'UTF-8'
+//        author true
+//        version true
+//        links "http://docs.oracle.com/javase/7/docs/api"
+//        title javadocName
+//    }
+//}
 
 artifacts {
 //    archives javadocJar
     archives sourcesJar
 }
 
+android.libraryVariants.all { variant ->
+    println variant.javaCompile.classpath.files
+    if(variant.name == 'release') {
+        task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
+            // title = ''
+            // description = ''
+            source = variant.javaCompile.source
+            classpath = files(variant.javaCompile.classpath.files, project.android.getBootClasspath())
+            options {
+                encoding "utf-8"
+                links "http://docs.oracle.com/javase/7/docs/api/"
+                linksOffline "http://d.android.com/reference", "${android.sdkDirectory}/docs/reference"
+            }
+            exclude '**/BuildConfig.java'
+            exclude '**/R.java'
+        }
+        task("javadoc${variant.name.capitalize()}Jar", type: Jar, dependsOn: "generate${variant.name.capitalize()}Javadoc") {
+            classifier = 'javadoc'
+            from tasks.getByName("generate${variant.name.capitalize()}Javadoc").destinationDir
+        }
+        artifacts {
+            archives tasks.getByName("javadoc${variant.name.capitalize()}Jar")
+        }
+    }
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
 // bintray configuration
 bintray {
-    user = bintrayUser
-    key = bintrayApikey
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
     configurations = ['archives']
     pkg {
-        repo = "maven"
-        name = projectName
-        websiteUrl = projectSiteUrl
-        vcsUrl = projectGitUrl
+        repo = 'maven'
+        name = 'GalleryFinal'
+        websiteUrl = 'https://github.com/Chenhengquan/GalleryFinal'
+        vcsUrl = 'https://github.com/Chenhengquan/GalleryFinal'
         licenses = ["Apache-2.0"]
         publish = true
+        publicDownloadNumbers = true
+        desc = 'A tool for Android'
+        version {
+            desc = 'A tool for Android'
+            gpg {
+                sign = true //Determines whether to GPG sign the files. The default is false
+                passphrase = properties.getProperty("bintray.gpg.password")
+                //Optional. The passphrase for GPG signing'
+            }
+        }
     }
 }
