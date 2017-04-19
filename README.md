@@ -29,7 +29,7 @@ Demo apk二维码地址：
 通过Gradle抓取:
 
 ```gradle
-compile 'cn.finalteam:galleryfinal:1.4.8.7'
+compile 'com.github.Chenhengquan:GalleryFinal:2.0.1'
 compile 'com.android.support:support-v4:23.1.1'
 ```
 
@@ -41,8 +41,8 @@ compile 'com.android.support:support-v4:23.1.1'
 * 精简配置
 * ……
 
-# 1.4.8.4更新内容
-* 解决fresco gif图片不显示问题
+# 2.01更新内容
+* 解决内存泄漏问题，在Activity onDestroy()时调用 GalleryFinal.clearCallback();
 
 ## 具体使用
 1、通过gradle把GalleryFinal添加到你的项目里
